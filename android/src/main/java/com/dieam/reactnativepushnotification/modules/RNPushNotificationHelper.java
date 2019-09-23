@@ -27,6 +27,10 @@ import com.facebook.react.bridge.ReadableMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -254,15 +258,9 @@ public class RNPushNotificationHelper {
                 }
             }
 
-            if (largeIcon != null) {
-                largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
-            } else {
-                largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
-            }
+            Bitmap largeIconBitmap = getBitmap(largeIcon);
 
-            Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
-
-            if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
+            if (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 notification.setLargeIcon(largeIconBitmap);
             }
 
@@ -403,6 +401,40 @@ public class RNPushNotificationHelper {
             this.scheduleNextNotificationIfRepeating(bundle);
         } catch (Exception e) {
             Log.e(LOG_TAG, "failed to send push notification", e);
+        }
+    }
+
+    private Bitmap getBitmap(String icon)
+    {
+        Resources res = context.getResources();
+        String packageName = context.getPackageName();
+
+        if (icon.startsWith("http")) {
+            return getBitmapFromURL(icon);
+        }
+
+        int largeIconResId;
+        if (icon != null) {
+            largeIconResId = res.getIdentifier(icon, "mipmap", packageName);
+        } else {
+            largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
+        }
+
+        return BitmapFactory.decodeResource(res, largeIconResId);
+    }
+
+    public Bitmap getBitmapFromURL(String strURL) {
+        try {
+            URL url = new URL(strURL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
