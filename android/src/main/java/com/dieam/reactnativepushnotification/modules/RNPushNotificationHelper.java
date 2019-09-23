@@ -226,8 +226,6 @@ public class RNPushNotificationHelper {
 
             notification.setContentText(bundle.getString("message"));
 
-            String largeIcon = bundle.getString("largeIcon");
-
             String subText = bundle.getString("subText");
 
             if (subText != null) {
@@ -240,7 +238,6 @@ public class RNPushNotificationHelper {
             }
 
             int smallIconResId;
-            int largeIconResId;
 
             String smallIcon = bundle.getString("smallIcon");
 
@@ -257,14 +254,17 @@ public class RNPushNotificationHelper {
                     smallIconResId = android.R.drawable.ic_dialog_info;
                 }
             }
+            notification.setSmallIcon(smallIconResId);
+
+            String largeIcon = bundle.getString("largeIcon");
+            Log.v(LOG_TAG, "Setting largeIcon from value " + largeIcon);
 
             Bitmap largeIconBitmap = getBitmap(largeIcon);
 
-            if (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (largeIcon != null && largeIconBitmap != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 notification.setLargeIcon(largeIconBitmap);
             }
 
-            notification.setSmallIcon(smallIconResId);
             String bigText = bundle.getString("bigText");
 
             if (bigText == null) {
@@ -409,12 +409,12 @@ public class RNPushNotificationHelper {
         Resources res = context.getResources();
         String packageName = context.getPackageName();
 
-        if (icon.startsWith("http")) {
+        if (icon != null && icon.startsWith("http")) {
             return getBitmapFromURL(icon);
         }
 
         int largeIconResId;
-        if (icon != null) {
+        if (icon == null) {
             largeIconResId = res.getIdentifier(icon, "mipmap", packageName);
         } else {
             largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
@@ -433,6 +433,7 @@ public class RNPushNotificationHelper {
             Bitmap myBitmap = BitmapFactory.decodeStream(input);
             return myBitmap;
         } catch (IOException e) {
+            Log.v(LOG_TAG, "Failed to load image from url: " + strURL);
             e.printStackTrace();
             return null;
         }
