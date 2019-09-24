@@ -289,6 +289,13 @@ public class RNPushNotificationHelper {
                 }
 
                 notification.setStyle(new NotificationCompat.BigTextStyle().bigText(bigText));
+                
+                String colorText = bundle.getString("color");
+
+                if (colorText != null){
+                    int color = Color.parseColor(colorText);
+                    notification.setColor(color);
+                }
 
                 Intent intent = new Intent(context, intentClass);
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
