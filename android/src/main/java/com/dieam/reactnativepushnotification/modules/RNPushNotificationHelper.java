@@ -165,7 +165,7 @@ public class RNPushNotificationHelper {
 
             String largeIconStyle = bundle.getString("largeIconStyle");
 
-            if(largeIconStyle == "circle")
+            if(largeIconStyle != null && largeIconStyle.equals("circle"))
                 largeIconBitmap = getCircleBitmap(largeIconBitmap);
 
             return largeIconBitmap;
