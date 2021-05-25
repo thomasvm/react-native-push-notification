@@ -156,19 +156,25 @@ public class RNPushNotificationHelper {
 
         @Override
         protected Bitmap doInBackground(Bundle... bundles) {
-            bundle = bundles[0];
+            try {
+                bundle = bundles[0];
 
-            String largeIcon = bundle.getString("largeIcon");
-            Log.v(LOG_TAG, "Setting largeIcon from value " + largeIcon);
+                String largeIcon = bundle.getString("largeIcon");
+                Log.v(LOG_TAG, "Setting largeIcon from value " + largeIcon);
 
-            Bitmap largeIconBitmap = getBitmap(largeIcon);
+                Bitmap largeIconBitmap = getBitmap(largeIcon);
 
-            String largeIconStyle = bundle.getString("largeIconStyle");
+                String largeIconStyle = bundle.getString("largeIconStyle");
 
-            if(largeIconBitmap != null && largeIconStyle != null && largeIconStyle.equals("circle"))
-                largeIconBitmap = getCircleBitmap(largeIconBitmap);
+                if (largeIconBitmap != null && largeIconStyle != null && largeIconStyle.equals("circle"))
+                    largeIconBitmap = getCircleBitmap(largeIconBitmap);
 
-            return largeIconBitmap;
+                return largeIconBitmap;
+            } 
+            catch(Exception e) {
+                Log.w(LOG_TAG, "Fail to get bitmap", e);
+                return null;
+            }
         }
 
         @Override
@@ -289,7 +295,7 @@ public class RNPushNotificationHelper {
                 }
                 notification.setSmallIcon(smallIconResId);
 
-                if (largeIconBitmap != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (largeIconBitmap != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     notification.setLargeIcon(largeIconBitmap);
                 }
 
@@ -478,43 +484,47 @@ public class RNPushNotificationHelper {
             if (bitmap == null) {
                 return null;
             }
-            Bitmap output;
-            Rect srcRect, dstRect;
-            float r;
-            final int width = bitmap.getWidth();
-            final int height = bitmap.getHeight();
+            try {
+                Bitmap output;
+                Rect srcRect, dstRect;
+                float r;
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
 
-            if (width > height){
-                output = Bitmap.createBitmap(height, height, Bitmap.Config.ARGB_8888);
-                int left = (width - height) / 2;
-                int right = left + height;
-                srcRect = new Rect(left, 0, right, height);
-                dstRect = new Rect(0, 0, height, height);
-                r = height / 2;
-            }else{
-                output = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
-                int top = (height - width)/2;
-                int bottom = top + width;
-                srcRect = new Rect(0, top, width, bottom);
-                dstRect = new Rect(0, 0, width, width);
-                r = width / 2;
+                if (width > height){
+                    output = Bitmap.createBitmap(height, height, Bitmap.Config.ARGB_8888);
+                    int left = (width - height) / 2;
+                    int right = left + height;
+                    srcRect = new Rect(left, 0, right, height);
+                    dstRect = new Rect(0, 0, height, height);
+                    r = height / 2;
+                }else{
+                    output = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
+                    int top = (height - width)/2;
+                    int bottom = top + width;
+                    srcRect = new Rect(0, top, width, bottom);
+                    dstRect = new Rect(0, 0, width, width);
+                    r = width / 2;
+                }
+
+                Canvas canvas = new Canvas(output);
+
+                final int color = 0xff424242;
+                final Paint paint = new Paint();
+
+                paint.setAntiAlias(true);
+                canvas.drawARGB(0, 0, 0, 0);
+                paint.setColor(color);
+                canvas.drawCircle(r, r, r, paint);
+                paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+                canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
+
+                bitmap.recycle();
+
+                return output;
+            } catch(Exception e) {
+                Log.w(LOG_TAG, "Problem dealing with circle bitmap", e);
             }
-
-            Canvas canvas = new Canvas(output);
-
-            final int color = 0xff424242;
-            final Paint paint = new Paint();
-
-            paint.setAntiAlias(true);
-            canvas.drawARGB(0, 0, 0, 0);
-            paint.setColor(color);
-            canvas.drawCircle(r, r, r, paint);
-            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-            canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
-
-            bitmap.recycle();
-
-            return output;
         }
     }
 
