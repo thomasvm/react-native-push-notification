@@ -524,6 +524,7 @@ public class RNPushNotificationHelper {
                 return output;
             } catch(Exception e) {
                 Log.w(LOG_TAG, "Problem dealing with circle bitmap", e);
+                return null;
             }
         }
     }
